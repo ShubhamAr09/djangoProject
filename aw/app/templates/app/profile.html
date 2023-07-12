@@ -1,0 +1,50 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Profile{% endblock title %}
+
+{% block main-content %}
+<div class="container py-5" style="margin-top: 70px;">
+    <div class="row">
+        <div class="col-sm-3">
+            <h3>Welcome, <span class="text-capitalize">{{request.user}}</span></h3>
+            <hr class="my-4">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{% url 'profile' %}" class="btn btn-dark w-100">Profile</a>
+                </li>
+                <li class="list-group-item">
+                    <a href="{% url 'address' %}" class="btn btn-light w-100">Address</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-9">
+            <h3 class="mb-4">Edit Profile</h3>
+            <hr class="my-4">
+            <form action="" method="post">
+                {% csrf_token %}
+                {% for fm in form %}
+                    <div class="form-group">
+                        {{fm.label_tag}} {{fm}}
+                        <small class="text-danger">
+                            {{fm.errors|striptags}}
+                        </small>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-dark mt-3">Save Changes</button>
+                {% if form.non_filled_errors %}
+                    {% for error in form.non_filled_errors %}
+                        <p class="alert alert-danger my-3">{{error}}</p>
+                    {% endfor %}
+                {% endif %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-{{msg.tags}} my-3" role="alert">
+                            {{msg}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock main-content %}

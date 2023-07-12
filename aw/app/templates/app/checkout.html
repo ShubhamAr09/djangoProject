@@ -1,0 +1,105 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Buy Now{% endblock title %}
+
+{% block main-content %}
+<div class="container">
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{msg}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row mt-5">
+        <div class="col-sm-8" style="margin-top: 70px;">
+            <h4>Order Summary</h4>
+            <hr>
+            {% for item in cart_items %}
+            <div class="card mb-2">
+                <div class="card-body">
+                <h5 class=>Product: {{item.product.title}}</h5>
+                <p>Quantity: {{item.quantity}}</p>
+                <p class="fw-bold">Price: {{item.product.discounted_price}}</p>
+            </div>
+            </div>
+            {% endfor %}
+            <p class="fw-bold">Total Cost + Delivery Charge(Rs.40) = {{totalamount}}</p>
+            <small>
+                Term and Condition:<br>
+                By visiting our site and/or purchasing something from us, you engage in our “Service” and agree to be
+                bound by the following terms and conditions (“Terms of Service”, “Terms”), including those additional terms
+                and conditions and policies referenced herein and/or available by hyperlink. If these Terms of Service are
+                considered an offer, acceptance is expressly limited to these Terms of Service.
+            </small>
+        </div>
+        <div class="col-sm-4" style="margin-top: 70px;">
+            <h4>Select Shipping Address</h4>
+            <hr>
+            <form method="post" id="myForm">
+                {% csrf_token %}
+                {% for ad in addr %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5>{{ad.name}}</h5>
+                        <p>Mobile: {{ad.mobile}}</p>
+                        <p>{{ad.locality}} {{ad.city}} {{ad.state}} - {{ad.zipcode}}</p>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" style="border-color: #212529;" name="custid"
+                                id="custaddr{{forloop.counter}}" value="{{ad.id}}">
+                            <label class="form-check-label fw-bold" for="custaddr{{forloop.counter}}">Address:
+                                {{forloop.counter}}</label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="form-check mb-3">
+                    <label for="totamount" class="form-label">Total Amount</label>
+                    <input type="number" class="form-control" name="totamount" value="{{totalamount}}" readonly>
+                </div>
+                <div class="text-end">
+                    {% comment %} <button type="submit" class="btn btn-warning mt-3 px-5 fw-bold">Continue</button> {% endcomment %}
+                    <button id="rzp-button1" type="submit" class="btn btn-warning mt-3 px-5 fw-bold">Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock main-content %}
+
+{% block payment-gateway %}
+
+<script>
+var options = {
+    "key": "rzp_test_7i9fiqUjIZTCGk", // Enter the Key ID generated from the Dashboard
+    "amount": "{{razoramount}}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "Sneaks Anime",
+    "description": "Purchase Products",
+    "image": "https://example.com/your_logo",
+    "order_id": "{{order_id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function (response){
+      console.log("Success")
+        var form = document.getElementById("myForm")
+        //alert(response.razorpay_payment_id);
+        //alert(response.razorpay_order_id);
+        //alert(response.razorpay_signature)
+        window.location.href = 'http://localhost:8000/paymentdone?order_id=' + response.razorpay_order_id + '&payment_id=' + response.razorpay_payment_id + '&cust_id=' + form.elements["custid"].value;
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.on('payment.failed', function (response){
+        alert(response.error.description);
+});
+document.getElementById('rzp-button1').onclick = function(e){
+  console.log("button click");  
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+</script>
+
+{% endblock payment-gateway%}
